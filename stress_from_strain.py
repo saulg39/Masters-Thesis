@@ -43,14 +43,7 @@ def stress_from_strain(strain, n, Eel, spr, egg):
             else:
                   return "Time out Error"
 
-"""tic = time.perf_counter()
-for n in range(1000):
-      for t in range(1000):
-            if stress_from_strain(t**1.5*0.00001 + n**2*0.0000001 ,7.5,208000,328)=="Time out Error":
-                  print("Error stress is t*0.000001")
-
-toc = time.perf_counter()
-print(f"Done in {toc - tic:0.4f} seconds")"""
+"""
 tic = time.perf_counter()
 x = []
 y1 = []
@@ -69,4 +62,4 @@ toc = time.perf_counter()
 print(f"Done in {toc - tic:0.4f} seconds")
 plt.plot(x,y1)
 plt.plot(x,y2)
-plt.show()
+plt.show()"""
