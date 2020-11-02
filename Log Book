@@ -1,0 +1,2 @@
+02/11: Changed stress_from_strain to include the 2-stage model proposed by Rasmussen for stainless steel 
+	Files: Stress-strain model for ferritic stainless steels by Zhong Tao https://www.researchgate.net/publication/282201244_Stress-Strain_Model_for_Ferritic_Stainless_Steels 
