@@ -11,7 +11,7 @@ def stress_from_strain(strain, n, Eel, spr):
             return 0
       else:
             strain_det = spr / Eel + 0.002
-            if strain < strain_det or egg:
+            if strain < strain_det:
                   stress_est = strain * Eel
                   strain_est = stress_est / Eel + 0.002 * (stress_est / spr) ** n 
                   stop = 0
