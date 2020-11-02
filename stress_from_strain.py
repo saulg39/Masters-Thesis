@@ -4,7 +4,7 @@ from channel import channel
 import time
 import matplotlib.pyplot as plt
 
-def stress_from_strain(strain, n, Eel, spr, egg):
+def stress_from_strain(strain, n, Eel, spr):
       sign = np.sign(strain)
       strain = abs(strain)
       if strain == 0:
