@@ -81,9 +81,9 @@ def finitestrip_shape(L):
 
           for i in range(len(x)-1):
                ## assigning stresses
-               s1 = stress_list[i]
+               s1 = stress_list[i][0]
 
-               s2 = stress_list[i+1]
+               s2 = stress_list[i+1][0]
 
                ## Calculating Et and phi
 
@@ -91,7 +91,7 @@ def finitestrip_shape(L):
 
                Et2 = (spr * Eel) / (spr + 0.002 * n * Eel * (abs(s2) / spr) ** (n - 1))
 
-               Et = math.sqrt(Et1*Et2) 
+               Et = math.sqrt(stress_list[i][1]*stress_list[i+1][1]) 
 
                phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)
 
@@ -203,8 +203,8 @@ def finitestrip_shape(L):
      moment = 0
      for i in range(len(x)-1):
           area = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2) * t_list[i]
-          s1 = stress_list[i]
-          s2 = stress_list[i+1]
+          s1 = stress_list[i][0]
+          s2 = stress_list[i+1][0]
           moment += (((2 * y[i] +y[i + 1]) * s1 + (2 * y[i + 1] +y[i]) * s2)/6) * area
 
      return moment/10**6

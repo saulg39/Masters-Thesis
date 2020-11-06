@@ -8,7 +8,7 @@ def stress_from_strain(strain, n, Eel, spr):
       sign = np.sign(strain)
       strain = abs(strain)
       if strain == 0:
-            return 0
+            return [0, Eel]
       else:
             strain_det = spr / Eel + 0.002
             if strain < strain_det:
@@ -23,6 +23,7 @@ def stress_from_strain(strain, n, Eel, spr):
                         stress_est = (strain - strain_est3) * Et_est + stress_est3
                         strain_est = stress_est / Eel + 0.002 * (stress_est / spr) ** n
                         stop+=1
+                  Et_est = (spr * Eel) / (spr + 0.002 * n * Eel * (stress_est / spr) ** (n - 1))
 
             else:
                   Ey = Eel / (1 + 0.002 * n * Eel / spr)
@@ -37,9 +38,10 @@ def stress_from_strain(strain, n, Eel, spr):
                         stress_est = (strain - strain_est) * Et_est + stress_est
                         strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (stress_ult - spr)) ** m
                         stop+=1
+                  Et_est = ((stress_ult - spr) * Ey) / ((stress_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (stress_ult - spr)) ** (m - 1))
 
             if stop < 10000:
-                  return sign * stress_est
+                  return [sign * stress_est, Et_est]
             else:
                   return "Time out Error"
 
