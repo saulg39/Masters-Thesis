@@ -40,20 +40,23 @@ def finitestrip_shape(L):
      #  k      defines ratio between shear stress and strain increments
      #  v      poisson's ratio
      #  L      half-wavelength of locally buckled section
+     #  sg     a guess at the critical buckling stress
      #  Et     tangent modulus
      #
      ##########################################################################
 
      Eel = 208000
-     spr = 328000000
+     spr = 328
      n = 7.5
      v = 0.3
      k = -0.46
+     sg = 150
      t = 1.98
 
      ## Run channel.m
 
-     x, y, t_list, connections = I_beam(45,125,1.98,0.5)
+     x, y, t_list, connections = channel(45,23,125,1.98,0.01)
+     
 
      ## Initialising variables
      lamda = 2
@@ -77,22 +80,21 @@ def finitestrip_shape(L):
 
           ## Forming global K and G matrices loop
 
-          for con in connections:
+          for i in range(len(x)-1):
                ## assigning stresses
-               i,j = con
                s1 = stress_list[i][0]
 
-               s2 = stress_list[j][0]
+               s2 = stress_list[i+1][0]
 
                ## Calculating Et and phi
-
-               Et = math.sqrt(stress_list[i][1]*stress_list[j][1]) 
+               
+               Et = math.sqrt(stress_list[i][1]*stress_list[i+1][1]) 
 
                phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)
 
                ## Calculating width of element, bel, and thickness, t
 
-               bel = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
+               bel = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2)
                
                t = t_list[i]
 
@@ -135,15 +137,15 @@ def finitestrip_shape(L):
                     [0, 0, 0, 0, 0, 1, 0, 0], 
                     [0, 0, 0, 0, 0, -1, 0, 1]])
 
-               hyp = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
+               hyp = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2)
 
-               R = np.array([[0, -(y[j]-y[i])/hyp, (x[j]-x[i])/hyp, 0, 0, 0, 0, 0],
+               R = np.array([[0, -(y[i+1]-y[i])/hyp, (x[i+1]-x[i])/hyp, 0, 0, 0, 0, 0],
                     [0, 0, 0, 1, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, -(y[j]-y[i])/hyp, (x[j]-x[i])/hyp, 0],
+                    [0, 0, 0, 0, 0, -(y[i+1]-y[i])/hyp, (x[i+1]-x[i])/hyp, 0],
                     [0, 0, 0, 0, 0, 0, 0, 1],
-                    [0, (x[j]-x[i])/hyp, (y[j]-y[i])/hyp, 0, 0, 0, 0, 0],
+                    [0, (x[i+1]-x[i])/hyp, (y[i+1]-y[i])/hyp, 0, 0, 0, 0, 0],
                     [1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, (x[j]-x[i])/hyp, (y[j]-y[i])/hyp, 0],
+                    [0, 0, 0, 0, 0, (x[i+1]-x[i])/hyp, (y[i+1]-y[i])/hyp, 0],
                     [0, 0, 0, 0, 1, 0, 0, 0]])
 
                K1122 = np.zeros((8,8))
@@ -172,25 +174,12 @@ def finitestrip_shape(L):
 
                ## Assembling K matrix
 
-               K[(4*i):(4*i+4),(4*i):(4*i+4)] = K[(4*i):(4*i+4),(4*i):(4*i+4)] + Kel[0:4,0:4]
-
-               K[(4*j):(4*j+4),(4*i):(4*i+4)] = K[(4*j):(4*j+4),(4*i):(4*i+4)] + Kel[4:8,0:4]
-
-               K[(4*i):(4*i+4),(4*j):(4*j+4)] = K[(4*i):(4*i+4),(4*j):(4*j+4)] + Kel[0:4,4:8]
-
-               K[(4*j):(4*j+4),(4*j):(4*j+4)] = K[(4*j):(4*j+4),(4*j):(4*j+4)] + Kel[4:8,4:8]
+               K[(4*i):(4*i+8),(4*i):(4*i+8)] = K[(4*i):(4*i+8),(4*i):(4*i+8)] + Kel
 
 
                ## Assembling G matrix
 
-               G[(4*i):(4*i+4),(4*i):(4*i+4)] = G[(4*i):(4*i+4),(4*i):(4*i+4)] + Gel[0:4,0:4]
-
-               G[(4*j):(4*j+4),(4*i):(4*i+4)] = G[(4*j):(4*j+4),(4*i):(4*i+4)] + Gel[4:8,0:4]
-
-               G[(4*i):(4*i+4),(4*j):(4*j+4)] = G[(4*i):(4*i+4),(4*j):(4*j+4)] + Gel[0:4,4:8]
-
-               G[(4*j):(4*j+4),(4*j):(4*j+4)] = G[(4*j):(4*j+4),(4*j):(4*j+4)] + Gel[4:8,4:8]
-
+               G[(4*i):(4*i+8),(4*i):(4*i+8)] = G[(4*i):(4*i+8),(4*i):(4*i+8)] + Gel
 
                
            
@@ -209,11 +198,12 @@ def finitestrip_shape(L):
           return "Fail"
 
      moment = 0
-     for con in connections:
-          area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * t_list[con[0]]
-          s1 = stress_list[con[0]][0]
-          s2 = stress_list[con[1]][0]
-          moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
+     for i in range(len(x)-1):
+          area = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2) * t_list[i]
+          s1 = stress_list[i][0]
+          s2 = stress_list[i+1][0]
+          moment += (((2 * y[i] +y[i + 1]) * s1 + (2 * y[i + 1] +y[i]) * s2)/6) * area
+     print(G[0:10,0:10])
      return moment/10**6
   
 
@@ -222,7 +212,7 @@ def finitestrip_shape(L):
 x = []
 y = []
 
-for i in range(300):
+for i in range(1):
      number = 10 * 1.016**i
      y.append(finitestrip_shape(number))
      x.append(number)
