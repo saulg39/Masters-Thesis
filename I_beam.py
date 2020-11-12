@@ -27,15 +27,15 @@ def I_beam(b,d,t,r):
      connections = []
      for i in range(4):
           for j in range(nflange):
-               connections.append([i*(nflange+1)+j,i*(nflange+1)+j+1],t)
+               connections.append([i*(nflange+1)+j,i*(nflange+1)+j+1, t])
      for j in range(nweb):
-          connections.append([4*(nflange+1)+j,4*(nflange+1)+j+1],t)
-     connections.append([nflange,nflange*2+1],t)
-     connections.append([nflange*3+2,nflange*4+3],t)
-     connections.append([nflange,nflange*4+4],t)
-     connections.append([nflange*4+4,nflange*2+1],t)
-     connections.append([nflange*3+2,nflange*4+nweb+4],t)
-     connections.append([nflange*4+nweb+4,nflange*4+3],t)
+          connections.append([4*(nflange+1)+j,4*(nflange+1)+j+1, t])
+     connections.append([nflange,nflange*2+1, t])
+     connections.append([nflange*3+2,nflange*4+3, t])
+     connections.append([nflange,nflange*4+4, t])
+     connections.append([nflange*4+4,nflange*2+1, t])
+     connections.append([nflange*3+2,nflange*4+nweb+4, t])
+     connections.append([nflange*4+nweb+4,nflange*4+3, t])
 
      return x, y, connections
 

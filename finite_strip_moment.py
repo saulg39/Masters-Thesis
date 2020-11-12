@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 #C:\Users\saulg\Documents\year 4\IIB_Project\code
 #function [scr] = finitestrip_shape(L)
-def finitestrip_shape(L):
+def finitestrip_shape(L, shape, b, d, r, t, c, Eel, spr, n, v, k):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -44,31 +44,42 @@ def finitestrip_shape(L):
      #
      ##########################################################################
 
-     Eel = 208000
-     spr = 328
-     n = 7.5
-     v = 0.3
-     k = -0.46
-     t = 1.98
-
      ## Run channel.m
 
-     x, y, connections = I_beam(45,125,1.98,5)
+     if shape == "I Beam":
+          
+          x, y, connections = I_beam(b, d, t, r)
+          
+     elif shape == "channel":
 
-     #I_beam(45,125,1.98,5)
-     #channel(45,23,125,1.98,4)
+          x, y, connections = channel(b, c, d, t, r)
+
+     else:
+          x, y, connections = I_beam(b, d, t, r)
+
 
      ## Initialising variables
      lamda = 2
 
      A=0.00001
+     A_upper = False
+     A_lower = False
      B=0
-     
-     stop = 0
+     stop = False
+     count = 0
 
-     while abs(lamda-1)>0.001 and stop < 200:
-          stop +=1
-          A = A * lamda ** ((1/stop)**0.2)
+     while not stop:
+          count +=1
+          if A_upper == False or A_lower == False:
+               A = A * lamda
+          else:
+               ratio = - (math.log(A_upper[1]) / math.log(A_lower[1]))
+               ratio = ratio ** 0.8
+               if ratio > 1:
+                    A = (A_lower[0] * A_upper[0] ** (1/ratio))**(1/((1/ratio) + 1))
+               else:
+                    A = (A_upper[0] * A_lower[0] ** ratio)**(1/(ratio + 1))
+
           K = np.zeros((4*len(x),4*len(x)))
 
           G = np.zeros((4*len(x),4*len(x)))
@@ -203,11 +214,25 @@ def finitestrip_shape(L):
           w = w.real
           index = np.where(w > 0, w, np.inf).argmin()
           lamda = w[index]
-          #print(A,lamda )
-          
+
+          if lamda<1:
+               if A_upper == False:
+                    A_upper = [A,lamda]
+               elif A_upper[0] > A:
+                     A_upper = [A,lamda]
+          elif lamda>1:
+               if A_lower == False:
+                    A_lower = [A,lamda]
+               elif A_lower[0] < A:
+                     A_lower = [A,lamda]
+          if A_upper == False or A_lower == False:
+               if abs(lamda-1)<0.001 or count > 60:
+                    stop = True
+          elif count > 60 or (A_upper[0]-A_lower[0])/A_lower[0] < 0.001:
+               stop = True
           
           #[scr index] = min(eig(K,G)) 
-     if stop > 200:
+     if count > 200:
           return "Fail"
 
      moment = 0
@@ -219,17 +244,29 @@ def finitestrip_shape(L):
      return moment/10**6
   
 
-#print(finitestrip_shape(3000))
-
+n = 100
+max_L = 100000
+min_L = 5
+r = (max_L/min_L) ** (1/(n-1))
 x = []
 y = []
 
-for i in range(50):
-     number = 10 * 1.1**i
-     y.append(finitestrip_shape(number))
-     x.append(number)
+
+for i in range(n):
+     L = min_L * r**i
+     y.append(finitestrip_shape(L, shape = "channel", b = 45, d = 125, r = 4, t = 1.98, c = 23, Eel = 208000, spr = 328, n = 7.5, v = 0.3, k = -0.46))
+     x.append(L)
+x1 = []
+y1 = []
+
+for i in range(40):
+     L = 2000 * 1.11**i
+     y1.append(finitestrip_shape(L, shape = "channel", b = 45, d = 125, r = 4, t = 1.98, c = 23, Eel = 208000, spr = 328000, n = 7.5, v = 0.3, k = -0.46))
+     x1.append(L)
+
 
 plt.semilogx(x,y)
+plt.semilogx(x1,y1)
 plt.xlabel('L/mm')
 plt.ylabel('Moment KNm')
 plt.show()
