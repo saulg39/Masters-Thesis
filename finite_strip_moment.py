@@ -53,9 +53,9 @@ def finitestrip_shape(L):
 
      ## Run channel.m
 
-     x, y, connections = channel(45,23,125,1.98,4)
+     x, y, connections = I_beam(45,125,1.98,5)
 
-     #I_beam(45,125,1.98,0.5)
+     #I_beam(45,125,1.98,5)
      #channel(45,23,125,1.98,4)
 
      ## Initialising variables
