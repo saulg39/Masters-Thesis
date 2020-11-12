@@ -45,7 +45,7 @@ def finitestrip_shape(L):
      ##########################################################################
 
      Eel = 208000
-     spr = 328000000
+     spr = 328
      n = 7.5
      v = 0.3
      k = -0.46
@@ -53,7 +53,10 @@ def finitestrip_shape(L):
 
      ## Run channel.m
 
-     x, y, t_list, connections = I_beam(45,125,1.98,0.5)
+     x, y, connections = channel(45,23,125,1.98,4)
+
+     #I_beam(45,125,1.98,0.5)
+     #channel(45,23,125,1.98,4)
 
      ## Initialising variables
      lamda = 2
@@ -79,7 +82,7 @@ def finitestrip_shape(L):
 
           for con in connections:
                ## assigning stresses
-               i,j = con
+               i,j,t = con
                s1 = stress_list[i][0]
 
                s2 = stress_list[j][0]
@@ -94,7 +97,6 @@ def finitestrip_shape(L):
 
                bel = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
                
-               t = t_list[i]
 
                ## Calculating K11
 
@@ -210,7 +212,7 @@ def finitestrip_shape(L):
 
      moment = 0
      for con in connections:
-          area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * t_list[con[0]]
+          area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
           s1 = stress_list[con[0]][0]
           s2 = stress_list[con[1]][0]
           moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
@@ -222,8 +224,8 @@ def finitestrip_shape(L):
 x = []
 y = []
 
-for i in range(300):
-     number = 10 * 1.016**i
+for i in range(50):
+     number = 10 * 1.1**i
      y.append(finitestrip_shape(number))
      x.append(number)
 
