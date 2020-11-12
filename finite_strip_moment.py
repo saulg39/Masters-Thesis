@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 #C:\Users\saulg\Documents\year 4\IIB_Project\code
 #function [scr] = finitestrip_shape(L)
-def finitestrip_shape(L, shape, b, d, r, t, c, Eel, spr, n, v, k):
+def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -48,14 +48,14 @@ def finitestrip_shape(L, shape, b, d, r, t, c, Eel, spr, n, v, k):
 
      if shape == "I Beam":
           
-          x, y, connections = I_beam(b, d, t, r)
+          x, y, connections = I_beam(b, d, t_web, t_flange, r)
           
      elif shape == "channel":
 
-          x, y, connections = channel(b, c, d, t, r)
+          x, y, connections = channel(b, c, d, t_web, r)
 
      else:
-          x, y, connections = I_beam(b, d, t, r)
+          x, y, connections = I_beam(b, d, t_web, t_flange, r)
 
 
      ## Initialising variables
@@ -254,19 +254,11 @@ y = []
 
 for i in range(n):
      L = min_L * r**i
-     y.append(finitestrip_shape(L, shape = "channel", b = 45, d = 125, r = 4, t = 1.98, c = 23, Eel = 208000, spr = 328, n = 7.5, v = 0.3, k = -0.46))
+     y.append(finitestrip_shape(L, shape = "channel", b = 138.60, d = 202.05, r = 5, t_flange = 6.11, t_web = 6.01, c = 23, Eel = 208000, spr = 328, n = 7.5, v = 0.3, k = -0.46))
      x.append(L)
-x1 = []
-y1 = []
-
-for i in range(40):
-     L = 2000 * 1.11**i
-     y1.append(finitestrip_shape(L, shape = "channel", b = 45, d = 125, r = 4, t = 1.98, c = 23, Eel = 208000, spr = 328000, n = 7.5, v = 0.3, k = -0.46))
-     x1.append(L)
 
 
 plt.semilogx(x,y)
-plt.semilogx(x1,y1)
 plt.xlabel('L/mm')
 plt.ylabel('Moment KNm')
 plt.show()
