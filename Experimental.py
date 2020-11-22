@@ -1,6 +1,43 @@
 import math
 
-def value(B):
+
+n = 300
+max_L = 4000
+min_L = 20
+r = (max_L/min_L) ** (1/(n-1))
+Moment = []
+Moment_1 = []
+Length = []
+Length_factor= False
+
+for i in range(n):
+     L = min_L * r**i
+     print(L)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""def value(B):
 	H = 0.1 *2
 	V = 0.4 
 	su = 0.080
@@ -14,7 +51,7 @@ def value(B):
 
 for i in range(100):
 	n = 0.01*i + 4.1
-	print(value(n),n)
+	print(value(n),n)"""
 
 
 

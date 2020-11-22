@@ -6,7 +6,7 @@ import pandas as pd
 # cd c:/Users/saulg/Documents/IIB_Project
 #C:\Users\saulg\Documents\year 4\IIB_Project\code
 #function [scr] = finitestrip_shape(L)
-def finitestrip_shape(L):
+def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -42,28 +42,30 @@ def finitestrip_shape(L):
      #
      ##########################################################################
 
-     Eel = 208000
-     spr = 328
-     n = 7.5
-     v = 0.3
-     k = -0.46
-     sg = 150
-     t = 1.98
-
+     
      ## Run channel.m
 
-     x, y, t_list = channel(45,23,125,1.98,4)
+     if shape == "I Beam":
+          
+          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+          
+     elif shape == "channel":
+
+          x, y, connections = channel(b, c, d, t_web, r)
+
+     else:
+          x, y, connections = I_beam(b, d, t_web, t_flange, r)
      
      ## Initialising variables
      scr = 0
-     
-     K = np.zeros((4*len(x),4*len(x)))
-
-     G = np.zeros((4*len(x),4*len(x)))
+     sg = 0.5 * spr
 
 
      while (min(scr,sg) / max(scr,sg)) <= 0.99:
 
+          K = np.zeros((4*len(x),4*len(x)))
+
+          G = np.zeros((4*len(x),4*len(x)))
 
           ## Calculating Et and phi
 
@@ -200,4 +202,38 @@ def finitestrip_shape(L):
 
 
 
-finitestrip_shape(100)
+n = 130
+max_L = 4000
+min_L = 20
+r = (max_L/min_L) ** (1/(n-1))
+Stress = []
+Stress_1 = []
+Length = []
+Length_factor= False
+
+for i in range(n):
+     L = min_L * r**i
+     Length.append(L)
+     M = finitestrip_shape(L, shape = "channel", b = 50.8, d = 152.4, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46)
+     if Length_factor:
+          Stress_1.append(M)
+          for n in range(2,round(L/Length[0])+1):
+               M_2 = Stress[find_nearest(Length, L/n)]
+               if M > M_2:
+                    M = M_2
+
+     Stress.append(M)
+     
+if Length_factor:
+     plt.semilogx(Length, Stress_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')
+     plt.semilogx(Length, Stress, linewidth = 1.2, color = "black", label='Multiple Half Wavelengths')
+else:
+     plt.semilogx(Length, Stress, linewidth = 1.4, color = "black")
+
+#plt.semilogx([1000], [151], 'rx',  label='Buckling')
+#plt.semilogx([1000], [169], 'bx',  label='Failure')
+plt.xlabel('L / mm')
+plt.ylabel('Stress / MPa')
+plt.grid(True,'both')
+plt.legend()
+plt.show()
