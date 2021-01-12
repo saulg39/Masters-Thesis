@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import matplotlib.patches as mpatches
+from graph_moment import moment_graph
 from PIL import Image
 
 class BlittedCursor:
@@ -160,16 +161,21 @@ class BlittedCursor:
                 plt.close('all')
                 plt.figure(figsize=(11, 8))
                 path = evaluate_bezier(points, 50)
-                dpath = derivative(path)
-                ddpath = derivative(dpath)
+                for Eel in range(10,22,3):
+                    moment, A = moment_graph(shape = "I Beam", b = 139, d = 199.27, r = 6, t_flange = 10.26, t_web = 7.99, c = 12.7, Eel = Eel*10000, spr = 571, n = 7.5, v = 0.3, k = -0.46)
+                    plt.plot(A, moment, 'r-')
+                #dpath = derivative(path)
+                #ddpath = derivative(dpath)
                 x, y = points[:,0], points[:,1]
                 px, py = path[:,0], path[:,1]
-                dpx, dpy = dpath[:,0], dpath[:,1]
-                ddpx, ddpy = ddpath[:,0], ddpath[:,1]
+                #dpx, dpy = dpath[:,0], dpath[:,1]
+                #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
                 plt.plot(px, py, 'b-')
-                plt.plot(dpx, dpy, 'k-')
-                plt.plot(ddpx, ddpy, 'r-')
-                plt.plot(x, y, 'yo')
+                plt.ylabel('Moment / KNm')
+                plt.grid(True,'both')
+                #plt.plot(dpx, dpy, 'k-')
+                #plt.plot(ddpx, ddpy, 'r-')
+                #plt.plot(x, y, 'yo')
                 plt.show()
 
 def derivative(points):
