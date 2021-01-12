@@ -2,11 +2,14 @@ import math
 import numpy as np
 from scipy import linalg
 from channel import channel
+from I_beam import I_beam
+import time
+import matplotlib.pyplot as plt
 import pandas as pd 
 # cd c:/Users/saulg/Documents/IIB_Project
 #C:\Users\saulg\Documents\year 4\IIB_Project\code
 #function [scr] = finitestrip_shape(L)
-def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
+def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, sg):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -58,10 +61,9 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
      
      ## Initialising variables
      scr = 0
-     sg = 0.5 * spr
+     count = 0
 
-
-     while (min(scr,sg) / max(scr,sg)) <= 0.99:
+     while (min(scr,sg) / max(scr,sg)) <= 0.995 and count < 200:
 
           K = np.zeros((4*len(x),4*len(x)))
 
@@ -76,13 +78,19 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
 
           ## Forming global K and G matrices loop
 
-          for i in range(len(x)-1):
+          for con in connections:
 
 
-               ## Calculating width of element, bel
+               ## assigning stresses
+               i,j,t = con
+               ## Calculating Et and phi
 
-               bel = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2)
-               t = t_list[i]
+               phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)
+
+               ## Calculating width of element, bel, and thickness, t
+
+               bel = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
+               
 
                ## Calculating K11
 
@@ -123,15 +131,15 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
                     [0, 0, 0, 0, 0, 1, 0, 0], 
                     [0, 0, 0, 0, 0, -1, 0, 1]])
 
-               hyp = math.sqrt((x[i+1]-x[i])**2 + (y[i+1]-y[i])**2)
+               hyp = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
 
-               R = np.array([[0, -(y[i+1]-y[i])/hyp, (x[i+1]-x[i])/hyp, 0, 0, 0, 0, 0],
+               R = np.array([[0, -(y[j]-y[i])/hyp, (x[j]-x[i])/hyp, 0, 0, 0, 0, 0],
                     [0, 0, 0, 1, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, -(y[i+1]-y[i])/hyp, (x[i+1]-x[i])/hyp, 0],
+                    [0, 0, 0, 0, 0, -(y[j]-y[i])/hyp, (x[j]-x[i])/hyp, 0],
                     [0, 0, 0, 0, 0, 0, 0, 1],
-                    [0, (x[i+1]-x[i])/hyp, (y[i+1]-y[i])/hyp, 0, 0, 0, 0, 0],
+                    [0, (x[j]-x[i])/hyp, (y[j]-y[i])/hyp, 0, 0, 0, 0, 0],
                     [1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, (x[i+1]-x[i])/hyp, (y[i+1]-y[i])/hyp, 0],
+                    [0, 0, 0, 0, 0, (x[j]-x[i])/hyp, (y[j]-y[i])/hyp, 0],
                     [0, 0, 0, 0, 1, 0, 0, 0]])
 
                K1122 = np.zeros((8,8))
@@ -176,15 +184,100 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
           w = w.real
           index = np.where(w > 0, w, np.inf).argmin()
           scr = w[index]
-          print(scr)
 
-          sg = (scr + sg) / 2
-          #[scr index] = min(eig(K,G)) 
+          sg = (scr + 3*sg) / (4);
+
+
+     return sg 
            
          
       
        
-     lambdas, modes = linalg.eig(K,G)
+     
+
+
+
+n = 300
+max_L = 10000
+min_L = 20
+r = (max_L/min_L) ** (1/(n-1))
+Stress = []
+Stress_1 = []
+Length = []
+Length_factor= False
+S_2 = 300
+
+tic = time.perf_counter()
+for i in range(n):
+     L = min_L * r**i
+     Length.append(L)
+     if i == 0:
+          sg = 300
+     elif i == 1:
+          sg = s1
+          s2 = s1
+     else:
+          sg = abs(2 * s1 - s2)
+          s3 = s2
+          s2 = s1
+     
+     S = finitestrip_shape(L, shape = "channel", b = 45, d = 125, r = 4, t_flange = 1.98, t_web = 1.98, c = 23, Eel = 208000, spr = 328, n = 7.5, v = 0.3, k = -0.46, sg = sg)
+     s1 = S 
+     if Length_factor:
+          Stress_1.append(S)
+          for n in range(2,round(L/Length[0])+1):
+               S_2 = Stress[find_nearest(Length, L/n)]
+               if S > S_2:
+                    S = S_2
+     Stress.append(S)
+toc = time.perf_counter()
+print(f"Done in {toc - tic:0.4f} seconds")
+
+
+"""if Length_factor:
+     plt.semilogx(Length, Stress_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')
+     plt.semilogx(Length, Stress, linewidth = 1.2, color = "black", label='Multiple Half Wavelengths')
+else:
+     plt.semilogx(Length, Stress, linewidth = 0.8, color = "black", label='Inelastic buckling')
+     
+
+#plt.semilogx([1000], [151], 'rx',  label='Buckling')
+#plt.semilogx([1000], [169], 'bx',  label='Failure')
+plt.xlabel('L / mm')
+plt.ylabel('Stress / MPa')
+plt.grid(True,'both')
+plt.legend()
+plt.show()
+
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""lambdas, modes = linalg.eig(K,G)
 
      mode = (modes[:,index])
      zz = []
@@ -198,42 +291,4 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
 
      coordinates = [np.transpose(xx), np.transpose(yy), np.transpose(zz)]
 
-     pd.DataFrame(coordinates).to_csv("coordinates.cvs", header=None, index=None)
-
-
-
-n = 130
-max_L = 4000
-min_L = 20
-r = (max_L/min_L) ** (1/(n-1))
-Stress = []
-Stress_1 = []
-Length = []
-Length_factor= False
-
-for i in range(n):
-     L = min_L * r**i
-     Length.append(L)
-     M = finitestrip_shape(L, shape = "channel", b = 50.8, d = 152.4, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46)
-     if Length_factor:
-          Stress_1.append(M)
-          for n in range(2,round(L/Length[0])+1):
-               M_2 = Stress[find_nearest(Length, L/n)]
-               if M > M_2:
-                    M = M_2
-
-     Stress.append(M)
-     
-if Length_factor:
-     plt.semilogx(Length, Stress_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')
-     plt.semilogx(Length, Stress, linewidth = 1.2, color = "black", label='Multiple Half Wavelengths')
-else:
-     plt.semilogx(Length, Stress, linewidth = 1.4, color = "black")
-
-#plt.semilogx([1000], [151], 'rx',  label='Buckling')
-#plt.semilogx([1000], [169], 'bx',  label='Failure')
-plt.xlabel('L / mm')
-plt.ylabel('Stress / MPa')
-plt.grid(True,'both')
-plt.legend()
-plt.show()
+     pd.DataFrame(coordinates).to_csv("coordinates.cvs", header=None, index=None)"""

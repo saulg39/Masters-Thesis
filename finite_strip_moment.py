@@ -3,6 +3,7 @@ import numpy as np
 from scipy import linalg
 from channel import channel
 from I_beam import I_beam
+from RHS import RHS
 from stress_from_strain import stress_from_strain
 import time
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
+def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, A_initial):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -59,6 +60,10 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
 
           x, y, connections = channel(b, c, d, t_web, r)
 
+     elif shape == "RHS":
+
+          x, y, connections = RHS(b, d, t_web, r)
+
      else:
           x, y, connections = I_beam(b, d, t_web, t_flange, r)
 
@@ -66,7 +71,7 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
      ## Initialising variables
      lamda = 2
 
-     A=0.00001
+     A=A_initial/2
      A_upper = False
      A_lower = False
      B=0
@@ -79,7 +84,7 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
                A = A * lamda
           else:
                ratio = - (math.log(A_upper[1]) / math.log(A_lower[1]))
-               ratio = ratio ** 0.8
+               ratio = ratio ** 0.88
                if ratio > 1:
                     A = (A_lower[0] * A_upper[0] ** (1/ratio))**(1/((1/ratio) + 1))
                else:
@@ -235,33 +240,53 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
                     stop = True
           elif count > 60 or (A_upper[0]-A_lower[0])/A_lower[0] < 0.001:
                stop = True
-          
           #[scr index] = min(eig(K,G)) 
-     if count > 200:
-          return "Fail"
+     if count > 60:
+          print("L = ",L," has passed count limit")
 
+          return "Fail"
+     print(G,K)
      moment = 0
      for con in connections:
           area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
           s1 = stress_list[con[0]][0]
           s2 = stress_list[con[1]][0]
           moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
-     return moment/10**6
+
+     return moment/10**6, A
   
 
-n = 130
-max_L = 4000
-min_L = 20
+n = 6
+max_L = 100000
+min_L = 1
 r = (max_L/min_L) ** (1/(n-1))
 Moment = []
 Moment_1 = []
 Length = []
-Length_factor= False
+Length_factor= True
+tic = time.perf_counter()
 
 for i in range(n):
      L = min_L * r**i
      Length.append(L)
-     M = finitestrip_shape(L, shape = "channel", b = 50.8, d = 152.4, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46)
+     if i == 0:
+          A_initial = 0.00001
+     elif i == 1:
+          A_initial = A
+          A_2 = A
+     elif i == 2:
+          A_initial = abs(2 * A - A_2)
+          A_3 = A_2
+          A_2 = A
+     else:
+          A_initial = abs(3 * A - 3 * A_2 + A_3)
+          A_3 = A_2
+          A_2 = A
+
+     M, A = finitestrip_shape(L, shape = "RHS", b = 25, d = 60, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46, A_initial = A_initial)
+
+     if M =="Fail":
+          break
      if Length_factor:
           Moment_1.append(M)
           for n in range(2,round(L/Length[0])+1):
@@ -270,7 +295,8 @@ for i in range(n):
                     M = M_2
 
      Moment.append(M)
-     
+toc = time.perf_counter()
+print(f"Done in {toc - tic:0.4f} seconds")
 if Length_factor:
      plt.semilogx(Length, Moment_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')
      plt.semilogx(Length, Moment, linewidth = 1.2, color = "black", label='Multiple Half Wavelengths')

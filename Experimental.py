@@ -1,6 +1,57 @@
 import math
+import numpy as np
+from scipy import linalg
+from channel import channel
+from I_beam import I_beam
+from stress_from_strain import stress_from_strain
+import time
+import matplotlib.pyplot as plt
+import pandas as pd 
 
 
+"""
+names = ['Original', 'Current']
+values = [4,0.02]
+
+plt.figure(figsize=(9, 9))
+
+plt.subplot(111)
+plt.bar(names, values)
+plt.suptitle('Time taken to calculate the buckling moment for a half-sine length of a cross section ')
+plt.show()"""
+
+
+plt.rcdefaults()
+fig, ax = plt.subplots()
+
+# Example data
+people = ('Original', 'Current')
+y_pos = np.arange(len(people))
+performance = [4,0.02]
+error = np.random.rand(len(people))
+
+ax.bar(y_pos, performance, 0.3)
+ax.set_xticks(y_pos)
+ax.set_xticklabels(people)
+#ax.invert_xaxis()  # labels read top-to-bottom
+ax.set_ylabel('Time  /  s')
+ax.set_title('Time taken to calculate the buckling moment\nfor a half-sine length of a cross section ')
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 n = 300
 max_L = 4000
 min_L = 20
@@ -17,27 +68,7 @@ for i in range(n):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""def value(B):
+def value(B):
 	H = 0.1 *2
 	V = 0.4 
 	su = 0.080
