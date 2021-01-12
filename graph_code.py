@@ -10,7 +10,8 @@ class Graphplotter:
     A cross hair cursor using blitting for faster redraw.
     """
     def __init__(self, ax, image, scale_point, shape, b, d, r, t_flange, t_web, c, Espr, n, v, k):
-        self.scale_point, self.shape, self.b, self.d, self.r, self.t_flange, self.t_web, self.c, self.Espr, self.n, self.v, self.k = scale_point, shape, b, d, r, t_flange, t_web, c, Espr, n, v, k
+        self.scale_point, self.shape, self.b, self.d, self.r, self.t_flange, self.t_web, self.c, self.Espr, self.n, self.v, self.k = [scale_point, shape, b, d, r, t_flange, t_web, c, Espr, n, v, k]
+        print( self.b, self.r, self.t_web)
         self.width, self.height = image.size
         self.ax = ax
         self.background = None

@@ -7,6 +7,47 @@ from stress_from_strain import stress_from_strain
 import time
 import matplotlib.pyplot as plt
 import pandas as pd 
+import xlrd
+import os
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+my_file = os.path.join(THIS_FOLDER, 'Data','beam_column_data.xlsx')
+
+book = xlrd.open_workbook(my_file)
+
+
+
+# get the first worksheet
+first_sheet = book.sheet_by_index(1)
+
+
+
+# read a row slice
+row = first_sheet.row_slice(rowx=78,
+                            start_colx=10,
+                            end_colx=14)
+
+print(row[2].value)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 """
@@ -21,7 +62,7 @@ plt.suptitle('Time taken to calculate the buckling moment for a half-sine length
 plt.show()"""
 
 
-plt.rcdefaults()
+"""plt.rcdefaults()
 fig, ax = plt.subplots()
 
 # Example data
@@ -38,7 +79,7 @@ ax.set_ylabel('Time  /  s')
 ax.set_title('Time taken to calculate the buckling moment\nfor a half-sine length of a cross section ')
 
 plt.show()
-
+"""
 
 
 
