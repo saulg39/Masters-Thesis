@@ -15,7 +15,7 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, A_initial):
+def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, A_initial, s_ult = False):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -283,7 +283,7 @@ for i in range(n):
           A_3 = A_2
           A_2 = A
 
-     M, A = finitestrip_shape(L, shape = "RHS", b = 25, d = 60, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46, A_initial = A_initial)
+     M, A = finitestrip_shape(L, shape = "RHS", b = 25, d = 60, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46, A_initial = A_initial, s_ult = 700)
 
      if M =="Fail":
           break
@@ -305,6 +305,7 @@ else:
 
 #plt.semilogx([1000], [151], 'rx',  label='Buckling')
 #plt.semilogx([1000], [169], 'bx',  label='Failure')
+
 plt.xlabel('L / mm')
 plt.ylabel('Moment / KNm')
 plt.grid(True,'both')

@@ -7,7 +7,7 @@ from RHS import RHS
 from stress_from_strain import stress_from_strain
 
 
-def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last):
+def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last, s_ult = False):
     if shape == "I Beam":
           
           x, y, connections = I_beam(b, d, t_web, t_flange, r)
@@ -35,7 +35,7 @@ def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last):
     for A in A_list:
         stress_list = []
         for i in range(len(x)):
-            stress_list.append(stress_from_strain(A *(y[i]-B), n, Eel, spr))
+            stress_list.append(stress_from_strain(A *(y[i]-B), n, Eel, spr, s_ult))
         moment = 0
         for con in connections:
             area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
