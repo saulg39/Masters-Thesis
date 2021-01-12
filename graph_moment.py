@@ -31,7 +31,7 @@ def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last):
             max_abs_y = abs(num-B)
     
     #max_A = 20 * spr / max_abs_y / Eel
-    A_list = np.linspace(0,last*0.0000226,500)
+    A_list = np.linspace(0,last*0.0000226,150)
     for A in A_list:
         stress_list = []
         for i in range(len(x)):

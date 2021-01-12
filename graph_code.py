@@ -24,13 +24,11 @@ class BlittedCursor:
         self.points=[]
         self.pointsx=[]
         self.pointsy=[]
-        self.currentline=False
-        self.view=[0,0,10]
-        self.buildingwidth = 7
         self.redo_grid()
         self.first_clicks=True
         self.first_click=[]
         self.on_mouse_move("",True)
+        
 
 
 
@@ -92,9 +90,6 @@ class BlittedCursor:
             self.text.set_position((x+0.1,y+0.1))
             self.text.set_text('(%1.2f, %1.2f)' % (x, y))
             self.ax.figure.canvas.restore_region(self.background)
-            if self.currentline!=False:
-                cline, = plt.plot([self.currentline[0],x],[self.currentline[1],y],c='0.35',linewidth=1)
-                self.ax.draw_artist(cline)
             self.drawing()
             if self.points.count([x,y])!=0:
                 self.ax.draw_artist(self.ax.scatter(x,y,c='y',s=20))
@@ -137,13 +132,18 @@ class BlittedCursor:
             self.ax.draw_artist(self.vertical_line)
             self.ax.draw_artist(self.text)
             self.ax.figure.canvas.blit(self.ax.bbox)
-
-            
-
-
             self.on_mouse_move("",True)
+
+    def on_mouse_click2(self, event):
+        x, y = event.xdata, event.ydata
+        print(x,y)
+
+
     def on_key_click(self, event):
-        
+        if event.key =="c":
+            self.points.pop()
+            self.pointsx.pop()
+            self.pointsy.pop()
         
         if event.key =="o":
             if not self.first_clicks:
@@ -156,18 +156,18 @@ class BlittedCursor:
                 self.new_y = []
                 for p in self.points:
                     self.new_points.append([self.scale_point[0]*(p[0]-x0)/(x1-x0),self.scale_point[1]*(p[1]-y0)/(y1-y0)])
-                print(self.new_points)
-                points = np.array(self.new_points)
+                self.new_points = np.array(self.new_points)
                 plt.close('all')
-                plt.figure(figsize=(11, 8))
-                path = evaluate_bezier(points, 50)
-                for Eel in range(10,22,3):
-                    moment, A = moment_graph(shape = "I Beam", b = 139, d = 199.27, r = 6, t_flange = 10.26, t_web = 7.99, c = 12.7, Eel = Eel*10000, spr = 571, n = 7.5, v = 0.3, k = -0.46)
-                    plt.plot(A, moment, 'r-')
-                #dpath = derivative(path)
+                fig = plt.figure(figsize=(11, 8))
+                self.path = evaluate_bezier(self.new_points, 50)
+                self.spr = 550
+                self.Eel = 180000
+                moment, A = moment_graph(shape = "I Beam", b = 139, d = 199.27, r = 6, t_flange = 10.26, t_web = 7.99, c = 12.7, Eel = self.Eel, spr = self.spr, n = 7.5, v = 0.3, k = -0.46, last = self.new_points[-1][0])
+                plt.plot(A, moment, 'r-')
+                #dpath = derivative(self.path)
                 #ddpath = derivative(dpath)
-                x, y = points[:,0], points[:,1]
-                px, py = path[:,0], path[:,1]
+                x, y = self.new_points[:,0], self.new_points[:,1]
+                px, py = self.path[:,0], self.path[:,1]
                 #dpx, dpy = dpath[:,0], dpath[:,1]
                 #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
                 plt.plot(px, py, 'b-')
@@ -175,8 +175,47 @@ class BlittedCursor:
                 plt.grid(True,'both')
                 #plt.plot(dpx, dpy, 'k-')
                 #plt.plot(ddpx, ddpy, 'r-')
-                #plt.plot(x, y, 'yo')
+                plt.plot(x, y, 'yo')
+                fig.canvas.mpl_connect('button_press_event', blitted_cursor.on_mouse_click2)
+                fig.canvas.mpl_connect('key_press_event', blitted_cursor.on_key_click2)
                 plt.show()
+
+    def on_key_click2(self, event):
+        plt.close('all')
+        fig = plt.figure(figsize=(11, 8))
+        if event.key =="up":
+            self.spr += 5
+        if event.key =="down":
+            self.spr -= 5
+        if event.key =="left":
+            self.Eel += 5000
+        if event.key =="right":
+            self.Eel -= 5000
+        if event.key =="w":
+            self.spr += 25
+        if event.key =="s":
+            self.spr -= 25
+        if event.key =="a":
+            self.Eel += 25000
+        if event.key =="d":
+            self.Eel -= 25000
+        moment, A = moment_graph(shape = "I Beam", b = 139, d = 199.27, r = 6, t_flange = 10.26, t_web = 7.99, c = 12.7, Eel = self.Eel, spr = self.spr, n = 7.5, v = 0.3, k = -0.46, last = self.new_points[-1][0])
+        plt.plot(A, moment, 'r-')
+        #dpath = derivative(self.path)
+        #ddpath = derivative(dpath)
+        x, y = self.new_points[:,0], self.new_points[:,1]
+        px, py = self.path[:,0], self.path[:,1]
+        #dpx, dpy = dpath[:,0], dpath[:,1]
+        #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
+        plt.plot(px, py, 'b-')
+        plt.ylabel('Moment / KNm')
+        plt.grid(True,'both')
+        #plt.plot(dpx, dpy, 'k-')
+        #plt.plot(ddpx, ddpy, 'r-')
+        plt.plot(x, y, 'yo')
+        fig.canvas.mpl_connect('button_press_event', blitted_cursor.on_mouse_click2)
+        fig.canvas.mpl_connect('key_press_event', blitted_cursor.on_key_click2)
+        plt.show()
 
 def derivative(points):
     devivative = []
@@ -237,7 +276,7 @@ def evaluate_bezier(points, n):
 
 
 scale_point=[21,1]
-fig, ax = plt.subplots(figsize=(10,6))
+fig, ax = plt.subplots(figsize=(15,9))
 imData = plt.imread("foobar.png")
 plt.imshow(imData)
 blitted_cursor = BlittedCursor(ax,scale_point)
