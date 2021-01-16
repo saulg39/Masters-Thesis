@@ -10,7 +10,7 @@ def I_beam(b, d, t_web, t_flange, r):
      nweb = 8
      nflange = 3
      ncorner = 4
-
+     
      bflat = (b-t_web-2*r)/2
      dflat = d-2*t_flange-2*r
 

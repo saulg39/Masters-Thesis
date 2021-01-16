@@ -4,7 +4,8 @@ from channel import channel
 import time
 import matplotlib.pyplot as plt
 
-def stress_from_strain(strain, n, Eel, spr):
+def stress_from_strain(strain, n, Eel, spr, s_ult = False):
+      s_ult = False
       sign = np.sign(strain)
       strain = abs(strain)
       if strain == 0:
@@ -27,18 +28,19 @@ def stress_from_strain(strain, n, Eel, spr):
 
             else:
                   Ey = Eel / (1 + 0.002 * n * Eel / spr)
-                  stress_ult = spr * (1 - 0.0375 * (n - 5)) / (0.2 + 185 * spr / Eel)
-                  m = 1 + 3.5 * spr / stress_ult
-                  strain_ult = 1 - spr / stress_ult
+                  if s_ult==False:
+                        s_ult = spr * (1 - 0.0375 * (n - 5)) / (0.2 + 185 * spr / Eel)
+                  m = 1 + 3.5 * spr / s_ult
+                  strain_ult = 1 - spr / s_ult
                   stress_est = spr + (strain - strain_det) * Ey
-                  strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (stress_ult - spr)) ** m
+                  strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (s_ult - spr)) ** m
                   stop = 0
                   while  abs((strain - strain_est) / strain) > 0.0001 and stop < 10000:
-                        Et_est = ((stress_ult - spr) * Ey) / ((stress_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (stress_ult - spr)) ** (m - 1))
+                        Et_est = ((s_ult - spr) * Ey) / ((s_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (s_ult - spr)) ** (m - 1))
                         stress_est = (strain - strain_est) * Et_est + stress_est
-                        strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (stress_ult - spr)) ** m
+                        strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (s_ult - spr)) ** m
                         stop+=1
-                  Et_est = ((stress_ult - spr) * Ey) / ((stress_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (stress_ult - spr)) ** (m - 1))
+                  Et_est = ((s_ult - spr) * Ey) / ((s_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (s_ult - spr)) ** (m - 1))
 
             if stop < 10000:
                   return [sign * stress_est, Et_est]

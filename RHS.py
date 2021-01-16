@@ -17,11 +17,19 @@ def RHS(b,d,t,r):
      y_flange = np.array([dflat/2 + r] * (math.ceil(nflange/2+1)))
      x_flange = np.linspace(0,bflat/2,math.ceil(nflange/2+1))
 
+     y_corner = np.array([])
+     x_corner = np.array([])
+
+     for n in range(1,ncorner):
+          x_corner = np.append(x_corner, bflat/2+r*math.sin(n*math.pi/(2*ncorner)))
+          y_corner = np.append(y_corner, dflat/2+r*math.cos(n*math.pi/(2*ncorner)))
+
+     
      x_web = np.array([bflat/2 + r] * (math.ceil(nweb/2+1)))
      y_web = np.linspace(dflat/2,0,math.ceil(nweb/2+1))
 
-     x = np.concatenate((x_flange, x_web), axis = None)
-     y = np.concatenate((y_flange, y_web), axis = None)
+     x = np.concatenate((x_flange, x_corner, x_web), axis = None)
+     y = np.concatenate((y_flange, y_corner, y_web), axis = None)
 
      x_m1 = x[-2::-1]
      y_m1 = -1*y[-2::-1]

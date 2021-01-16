@@ -9,7 +9,48 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import xlrd
 import os
-THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
+
+
+  
+  
+fig, ax = plt.subplots() 
+line, = ax.plot([1,3,4],[1,1,5], 'k-') 
+  
+tstart = time.time() 
+num_plots = 0
+fig.canvas.draw() 
+  
+ 
+#line.set_ydata(np.random.randn(100)) 
+#ax.draw_artist(ax.patch) 
+ax.draw_artist(line) 
+num_plots += 1
+
+
+  
+plt.show()  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 my_file = os.path.join(THIS_FOLDER, 'Data','beam_column_data.xlsx')
 
 book = xlrd.open_workbook(my_file)
@@ -22,28 +63,12 @@ first_sheet = book.sheet_by_index(1)
 
 
 # read a row slice
-row = first_sheet.row_slice(rowx=78,
+row = first_sheet.row_slice(rowx=84,
                             start_colx=10,
                             end_colx=14)
 
 print(row[2].value)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+"""
 
 
 
