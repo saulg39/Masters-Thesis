@@ -357,7 +357,7 @@ fig, ax = plt.subplots(figsize=(15,9))
 imData = plt.imread(pic)
 image = Image.open(pic)
 plt.imshow(imData)
-graph_plotter = Graphplotter(ax, image, scale_point=[0.0012,40], shape = "RHS", row_number = (22-1), v = 0.3, k = -0.46)
+graph_plotter = Graphplotter(ax, image, scale_point=[0.0012,40], shape = "RHS", row_number = (19-1), v = 0.3, k = -0.46)
 
 fig.canvas.mpl_connect('motion_notify_event', graph_plotter.on_mouse_move)
 fig.canvas.mpl_connect('button_press_event', graph_plotter.on_mouse_click)

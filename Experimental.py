@@ -15,7 +15,7 @@ import os
   
   
 fig, ax = plt.subplots() 
-line, = ax.plot([1,3,4],[1,1,5], 'k-') 
+line, = self.ax.plot(self.px, self.py, 'b-')
   
 tstart = time.time() 
 num_plots = 0

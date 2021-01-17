@@ -245,7 +245,7 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
           print("L = ",L," has passed count limit")
 
           return "Fail"
-     print(G,K)
+     
      moment = 0
      for con in connections:
           area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
@@ -256,9 +256,9 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
      return moment/10**6, A
   
 
-n = 6
-max_L = 100000
-min_L = 1
+"""n = 300
+max_L = 10000
+min_L = 5
 r = (max_L/min_L) ** (1/(n-1))
 Moment = []
 Moment_1 = []
@@ -283,7 +283,7 @@ for i in range(n):
           A_3 = A_2
           A_2 = A
 
-     M, A = finitestrip_shape(L, shape = "RHS", b = 25, d = 60, r = 0.01, t_flange = 1, t_web = 1, c = 12.7, Eel = 203000, spr = 579, n = 7.6, v = 0.3, k = -0.46, A_initial = A_initial, s_ult = 700)
+     M, A = finitestrip_shape(L, shape = "I_beam", b = 138.6, d = 214.3, r = 5, t_flange = 6.11, t_web = 6.01, c = 12.7, Eel = 195000, spr = 520, n = 7.9, v = 0.3, k = -0.46, A_initial = A_initial, s_ult = 749)
 
      if M =="Fail":
           break
@@ -310,7 +310,7 @@ plt.xlabel('L / mm')
 plt.ylabel('Moment / KNm')
 plt.grid(True,'both')
 plt.legend()
-plt.show()
+plt.show()"""
 
 
 
