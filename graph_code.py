@@ -209,21 +209,23 @@ class Graphplotter:
                 fig = plt.figure(figsize=(11, 8))
                 self.path = evaluate_bezier(self.new_points, 50)
                 self.moment, self.A = moment_graph(shape = self.shape, b = self.b, d = self.d, r = self.r, t_flange = self.t_flange, t_web = self.t_web, c = self.c, Eel = self.Eel, spr = self.spr, n = self.n, v = self.v, k = self.k, last = self.new_points[-1][0], curve_pl=self.curve_pl, s_pl=self.s_pl,  s_ult = False)
-                plt.plot(self.A, self.moment, 'r-')
+                plt.plot(self.A, self.moment, 'r-', label='Theoretical')
                 #dpath = derivative(self.path)
                 #ddpath = derivative(dpath)
                 x, y = self.new_points[:,0], self.new_points[:,1]
                 px, py = self.path[:,0], self.path[:,1]
                 #dpx, dpy = dpath[:,0], dpath[:,1]
                 #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
-                plt.plot(px, py, 'b-')
+                plt.plot(px, py, 'b-', label='Experimental')
                 plt.ylabel('Moment / KNm')
+                plt.xlabel('Curvature / rad')
                 plt.grid(True,'both')
                 #plt.plot(dpx, dpy, 'k-')
                 #plt.plot(ddpx, ddpy, 'r-')
                 plt.plot(x, y, 'yo')
                 fig.canvas.mpl_connect('button_press_event', graph_plotter.on_mouse_click2)
                 fig.canvas.mpl_connect('key_press_event', graph_plotter.on_key_click2)
+                plt.legend()
                 plt.show()
 
     def on_key_click2(self, event):
@@ -276,22 +278,24 @@ class Graphplotter:
         if event.key =="a":
             self.A = [i / 1.2 for i in self.A]
         if event.key =="d":
-            self.A = [i * 1.2 for i in self.A]
-        plt.plot(self.A, self.moment, 'r-')
+            self.A = [i * 1.2 for i in self.A] 
+        plt.plot(self.A, self.moment, 'r-', label='Theoretical')
         #dpath = derivative(self.path)
         #ddpath = derivative(dpath)
         x, y = self.new_points[:,0], self.new_points[:,1]
         px, py = self.path[:,0], self.path[:,1]
         #dpx, dpy = dpath[:,0], dpath[:,1]
         #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
-        plt.plot(px, py, 'b-')
+        plt.plot(px, py, 'b-', label='Experimental')
         plt.ylabel('Moment / KNm')
+        plt.xlabel('Curvature / rad')
         plt.grid(True,'both')
         #plt.plot(dpx, dpy, 'k-')
         #plt.plot(ddpx, ddpy, 'r-')
         plt.plot(x, y, 'yo')
         fig.canvas.mpl_connect('button_press_event', graph_plotter.on_mouse_click2)
         fig.canvas.mpl_connect('key_press_event', graph_plotter.on_key_click2)
+        plt.legend()
         plt.show()
 
 def derivative(points):
@@ -357,7 +361,7 @@ fig, ax = plt.subplots(figsize=(15,9))
 imData = plt.imread(pic)
 image = Image.open(pic)
 plt.imshow(imData)
-graph_plotter = Graphplotter(ax, image, scale_point=[0.0012,40], shape = "RHS", row_number = (19-1), v = 0.3, k = -0.46)
+graph_plotter = Graphplotter(ax, image, scale_point=[0.0012,40], shape = "RHS", row_number = (23-1), v = 0.3, k = -0.46)
 
 fig.canvas.mpl_connect('motion_notify_event', graph_plotter.on_mouse_move)
 fig.canvas.mpl_connect('button_press_event', graph_plotter.on_mouse_click)

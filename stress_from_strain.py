@@ -4,7 +4,11 @@ from channel import channel
 import time
 import matplotlib.pyplot as plt
 
-def stress_from_strain(strain, n, Eel, spr, s_ult = False):
+def stress_from_strain(strain, Material):
+      Eel = Material[0]
+      spr = Material[1]
+      n = Material[2]
+      s_ult = Material[5]
       s_ult = False
       sign = np.sign(strain)
       strain = abs(strain)

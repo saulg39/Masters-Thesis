@@ -15,7 +15,7 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, A_initial, s_ult = False):
+def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
      ##########################################################################
      #
      #  This program finds the critical buckling stress of a channel
@@ -52,20 +52,20 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
 
      ## Run channel.m
 
-     if shape == "I Beam":
+     if shape[0] == "I Beam":
           
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+          x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
           
-     elif shape == "channel":
+     elif shape[0] == "channel":
 
-          x, y, connections = channel(b, c, d, t_web, r)
+          x, y, connections = channel(b = shape[1], c = shape[6], d = shape[2], t = shape[4], r = shape[3])
 
-     elif shape == "RHS":
+     elif shape[0] == "RHS":
 
-          x, y, connections = RHS(b, d, t_web, r)
+          x, y, connections = RHS(b = shape[1], d = shape[2], t = shape[4], r = shape[3])
 
      else:
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+          x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
 
 
      ## Initialising variables
@@ -97,20 +97,37 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
           ## Calculating Et and phi
           stress_list = []
           for i in range(len(x)):
-               stress_list.append(stress_from_strain(A * (y[i]-B), n, Eel, spr))
+               stress_list.append(stress_from_strain(A * (y[i]-B), Material_flat))
 
           ## Forming global K and G matrices loop
 
           for con in connections:
                ## assigning stresses
-               i,j,t = con
-               s1 = stress_list[i][0]
+               i,j,t,f = con
 
-               s2 = stress_list[j][0]
+               if Material_corner[0] == "Y" and f == True:
+                    stress_list_1 = stress_from_strain(A * (y[i]-B), Material_corner[1])
+                    stress_list_2 = stress_from_strain(A * (y[i]-B), Material_corner[1])
+                    Eel = Material_corner[1][0]
+                    v = Material_corner[1][3]
+                    k = Material_corner[1][4]
+
+               else:
+                    stress_list_1 = stress_list[i]
+                    stress_list_2 = stress_list[j]
+                    Eel = Material_flat[0]
+                    v = Material_flat[3]
+                    k = Material_flat[4]
+
+
+
+               s1 = stress_list_1[0]
+
+               s2 = stress_list_2[0]
 
                ## Calculating Et and phi
 
-               Et = math.sqrt(stress_list[i][1]*stress_list[j][1]) 
+               Et = math.sqrt(stress_list_1[1]*stress_list_2[1]) 
 
                phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)
 
@@ -249,8 +266,14 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
      moment = 0
      for con in connections:
           area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
-          s1 = stress_list[con[0]][0]
-          s2 = stress_list[con[1]][0]
+          if Material_corner[0] == "Y" and con[3] == True:
+               s1 = stress_from_strain(A * (y[con[0]]-B), Material_corner[1])[0]
+               s2 = stress_from_strain(A * (y[con[1]]-B), Material_corner[1])[0]
+
+          else:
+               s1 = stress_list[con[0]][0]
+               s2 = stress_list[con[1]][0]
+
           moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
 
      return moment/10**6, A

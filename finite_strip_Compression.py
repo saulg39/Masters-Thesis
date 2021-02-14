@@ -9,6 +9,12 @@ import pandas as pd
 # cd c:/Users/saulg/Documents/IIB_Project
 #C:\Users\saulg\Documents\year 4\IIB_Project\code
 #function [scr] = finitestrip_shape(L)
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
 def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, sg):
      ##########################################################################
      #
@@ -196,7 +202,7 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
      
 
 
-
+"""
 n = 300
 max_L = 10000
 min_L = 20
@@ -204,7 +210,7 @@ r = (max_L/min_L) ** (1/(n-1))
 Stress = []
 Stress_1 = []
 Length = []
-Length_factor= False
+Length_factor= True
 S_2 = 300
 
 tic = time.perf_counter()
@@ -234,7 +240,7 @@ toc = time.perf_counter()
 print(f"Done in {toc - tic:0.4f} seconds")
 
 
-"""if Length_factor:
+if Length_factor:
      plt.semilogx(Length, Stress_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')
      plt.semilogx(Length, Stress, linewidth = 1.2, color = "black", label='Multiple Half Wavelengths')
 else:
@@ -247,10 +253,9 @@ plt.xlabel('L / mm')
 plt.ylabel('Stress / MPa')
 plt.grid(True,'both')
 plt.legend()
-plt.show()
+plt.show()"""
 
 
-"""
 
 
 

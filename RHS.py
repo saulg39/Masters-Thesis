@@ -6,7 +6,6 @@ def RHS(b,d,t,r):
      # 4 elements per corner
      # 10 elements for the web
      # 4 elements for flange and lip
-
      nweb = 10
      nflange = 4
      ncorner = 4
@@ -44,6 +43,9 @@ def RHS(b,d,t,r):
      connections = []
 
      for i in range(len(x)-1):
-          connections.append([i, i+1, t])
-     connections.append([i+1, 0, t])
+          if x[i] == x[i+1] or y[i] == y[i+1]:
+               connections.append([i, i+1, t, False])
+          else:
+               connections.append([i, i+1, t, True])
+     connections.append([i+1, 0, t, False])
      return x, y, connections
