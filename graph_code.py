@@ -28,8 +28,8 @@ class Graphplotter:
         # read a row slice
         if row_number<100:
             row = self.first_sheet.row_slice(rowx=row_number,
-                                        start_colx=28,
-                                        end_colx=45)
+                                        start_colx=29,
+                                        end_colx=46)
 
 
             self.b, self.d, self.r, self.t_flange, self.t_web, self.c, self.spr, self.s_ult, self.n, self.Eel, self.s_pl, self.curve_pl = [row[2].value, row[1].value, row[4].value, row[3].value, row[3].value, row[3].value, row[9].value, row[10].value, row[13].value, row[12].value, row[15].value, row[16].value]
@@ -65,7 +65,8 @@ class Graphplotter:
         self.py=[]
         self.redo_grid()
         self.first_clicks=True
-        self.first_click=[]
+        self.first_click = [0,0]
+        self.second_click = [0,0]
         self.on_mouse_move("",True)
         
 
@@ -99,7 +100,9 @@ class Graphplotter:
         self._creating_background = False
 
     def drawing(self):
+        self.ax.draw_artist(self.ax.scatter([self.first_click[0],self.second_click[0]],[self.first_click[1],self.second_click[1]],c='r',s=30,marker='x'))
         self.ax.draw_artist(self.ax.scatter(self.pointsx,self.pointsy,c='k',s=30,marker='x'))
+
 
 
     def on_mouse_move(self, event, initial=False):
@@ -154,7 +157,7 @@ class Graphplotter:
             x = round(x/self.ratio[0],self.ratio[1])*self.ratio[0]
             y = round(y/self.ratio[0],self.ratio[1])*self.ratio[0]
             if self.first_clicks:
-                if self.first_click == []:
+                if self.first_click == [0,0]:
                     self.first_click=[x,y]
                 else:
                     self.second_click = [x,y]
@@ -208,24 +211,27 @@ class Graphplotter:
                 plt.close('all')
                 fig = plt.figure(figsize=(11, 8))
                 self.path = evaluate_bezier(self.new_points, 50)
+
                 self.moment, self.A = moment_graph(shape = self.shape, b = self.b, d = self.d, r = self.r, t_flange = self.t_flange, t_web = self.t_web, c = self.c, Eel = self.Eel, spr = self.spr, n = self.n, v = self.v, k = self.k, last = self.new_points[-1][0], curve_pl=self.curve_pl, s_pl=self.s_pl,  s_ult = False)
+
                 plt.plot(self.A, self.moment, 'r-', label='Theoretical')
-                #dpath = derivative(self.path)
-                #ddpath = derivative(dpath)
+                dpath = derivative(self.path)
+                ddpath = derivative(dpath)
                 x, y = self.new_points[:,0], self.new_points[:,1]
                 px, py = self.path[:,0], self.path[:,1]
-                #dpx, dpy = dpath[:,0], dpath[:,1]
-                #ddpx, ddpy = ddpath[:,0], ddpath[:,1]
-                plt.plot(px, py, 'b-', label='Experimental')
+                dpx, dpy = dpath[:,0], 0.0001*dpath[:,1]
+                ddpx, ddpy = ddpath[:,0], 0.00000001*ddpath[:,1]
+                plt.plot(px, py, 'b-', label='Moment')
                 plt.ylabel('Moment / KNm')
                 plt.xlabel('Curvature / rad')
                 plt.grid(True,'both')
-                #plt.plot(dpx, dpy, 'k-')
-                #plt.plot(ddpx, ddpy, 'r-')
-                plt.plot(x, y, 'yo')
+                plt.plot(dpx, dpy, 'k-',label='1st Devivative (x10^-4)')
+                plt.plot(ddpx, ddpy, 'r-', label='2nd Devivative (x10^-8)')
+                plt.plot(x, y, 'ko')
                 fig.canvas.mpl_connect('button_press_event', graph_plotter.on_mouse_click2)
                 fig.canvas.mpl_connect('key_press_event', graph_plotter.on_key_click2)
                 plt.legend()
+                
                 plt.show()
 
     def on_key_click2(self, event):

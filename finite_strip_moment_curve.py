@@ -5,6 +5,7 @@ from channel import channel
 from I_beam import I_beam
 from RHS import RHS
 from stress_from_strain import stress_from_strain
+from get_data import get_data
 import time
 import matplotlib.pyplot as plt
 import pandas as pd 
@@ -14,40 +15,17 @@ import xlrd
 from xlutils.copy import copy
 from xlwt import Workbook
 
-#C:\Users\saulg\Documents\year 4\IIB_Project\code
+#cd c:/Users/saulg/Documents/year\ 4/IIB_Project/code/mycode
+
 
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
 
-THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-my_file = os.path.join(THIS_FOLDER, 'Data','beam_column_data.xlsx')
-book = xlrd.open_workbook(my_file)
-# get the first worksheet
-sheet = book.sheet_by_index(1)
-   # read a row slice
-   
-row_number = 116
+Material, Forming_process, Bending_type, Actual_Length, shape, Material_flat, Material_corner = get_data(122)
 
-row = sheet.row_slice(rowx=row_number-1,
-                    start_colx=0,
-                    end_colx=40)
-
-
-Forming_process = row[4].value
-Bending_type = row[5].value
-Actual_Length = row[6].value
-shape = []
-for i in range(7,14):
-     shape.append(row[i].value)
-Material_flat = []
-for i in range(14,20):
-     Material_flat.append(row[i].value)
-Material_corner = [row[20].value,[]]
-for i in range(21,27):
-     Material_corner[1].append(row[i].value)
-
+print(Material)
 print(Forming_process)
 print(Bending_type)
 print(shape)
@@ -55,11 +33,12 @@ print(Actual_Length)
 print(Material_flat)
 print(Material_corner)
 
-number = 500
-max_L = 20000
-min_L = 20
+number = 200
+max_L = 1000
+min_L = 5
 r = (max_L/min_L) ** (1/(number-1))
 Moment = []
+stress_list = []
 Moment_1 = []
 Length = []
 Length_factor= True
@@ -82,9 +61,10 @@ for i in range(number):
           A_3 = A_2
           A_2 = A
 
-     M, A = finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial)
+     M, A, max_stress = finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial)
 
      if M =="Fail":
+          Length.pop()
           break
      if Length_factor:
           Moment_1.append(M)
@@ -92,18 +72,21 @@ for i in range(number):
                M_2 = Moment[find_nearest(Length, L/num)]
                if M > M_2:
                     M = M_2
+                    max_stress = stress_list[find_nearest(Length, L/num)]
 
      Moment.append(M)
+     stress_list.append(max_stress)
 toc = time.perf_counter()
 print(f"Done in {toc - tic:0.4f} seconds")
-M, A = finitestrip_shape(Actual_Length, shape, Material_flat, Material_corner, A_initial)
+M, A, max_stress= finitestrip_shape(Actual_Length, shape, Material_flat, Material_corner, A_initial)
 
 if Length_factor and M !="Fail":
      for num in range(2,round(Actual_Length/Length[0])+1):
           M_2 = Moment[find_nearest(Length, Actual_Length/num)]
-          if M > M_2:
-               M = M_2
-print(Actual_Length,M)
+          if M_2<M:
+               M=M_2
+               max_stress = stress_list[find_nearest(Length, Actual_Length/num)]
+print(Actual_Length,M, max_stress)
 plt.semilogx([Actual_Length], [M],'rx')
 if Length_factor:
      plt.semilogx(Length, Moment_1, linewidth = 0.4, color = "black", label='Singe Half Wavelength')

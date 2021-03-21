@@ -9,7 +9,6 @@ def stress_from_strain(strain, Material):
       spr = Material[1]
       n = Material[2]
       s_ult = Material[5]
-      s_ult = False
       sign = np.sign(strain)
       strain = abs(strain)
       if strain == 0:
@@ -32,7 +31,7 @@ def stress_from_strain(strain, Material):
 
             else:
                   Ey = Eel / (1 + 0.002 * n * Eel / spr)
-                  if s_ult==False:
+                  if s_ult==0:
                         s_ult = spr * (1 - 0.0375 * (n - 5)) / (0.2 + 185 * spr / Eel)
                   m = 1 + 3.5 * spr / s_ult
                   strain_ult = 1 - spr / s_ult

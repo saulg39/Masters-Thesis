@@ -7,23 +7,25 @@ from RHS import RHS
 from stress_from_strain import stress_from_strain
 from plastic_moment import plastic_moment
 
-def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last, curve_pl=1, s_pl=1, s_ult = False):
+def moment_graph(shape, Material_flat, Material_corner, last, curve_pl=1, s_pl=1, s_ult = False):
 
 
-    if shape == "I Beam":
+    if shape[0] == "I Beam":
           
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+        x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
           
-    elif shape == "channel":
+    elif shape[0] == "channel":
 
-          x, y, connections = channel(b, c, d, t_web, r)
+        x, y, connections = channel(b = shape[1], c = shape[6], d = shape[2], t = shape[4], r = shape[3])
 
-    elif shape == "RHS":
+    elif shape[0] == "RHS":
 
-          x, y, connections = RHS(b, d, t_web, r)
+        x, y, connections = RHS(b = shape[1], d = shape[2], t = shape[4], r = shape[3])
 
     else:
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+        x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
+
+
     max_abs_y = y[0]
     B=0
     moment_list = []
@@ -31,22 +33,32 @@ def moment_graph(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, last, cu
     for num in y:
         if abs(num-B) > max_abs_y:
             max_abs_y = abs(num-B)
-    
+
     #max_A = 20 * spr / max_abs_y / Eel
     A_list = np.linspace(0,last*curve_pl,150)
+
     for A in A_list:
         stress_list = []
         for i in range(len(x)):
-            stress_list.append(stress_from_strain(A *(y[i]-B), n, Eel, spr, s_ult))
+            stress_list.append(stress_from_strain(A * (y[i]-B), Material_flat))
         moment = 0
         for con in connections:
-            area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
-            s1 = stress_list[con[0]][0]
-            s2 = stress_list[con[1]][0]
-            moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
+            i,j,t,f = con
+            if Material_corner[0] == "Y" and f == True:
+                stress_list_1 = stress_from_strain(A * (y[i]-B), Material_corner[1])
+                s1 = stress_from_strain(A * (y[i]-B), Material_corner[1])
+
+            else:
+                stress_list_1 = stress_list[i]
+                stress_list_2 = stress_list[j]
+            
+            s1 = stress_list_1[0]
+            s2 = stress_list_2[0]
+
+            area = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2) * t
+            moment += (((2 * y[i] +y[j]) * s1 + (2 * y[i] +y[j]) * s2)/6) * area
         moment_list.append(moment/10**6/s_pl)
         Apl_list.append(A/curve_pl)
-        
     return(moment_list, Apl_list)
 
 

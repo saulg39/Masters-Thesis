@@ -261,7 +261,7 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
      if count > 60:
           print("L = ",L," has passed count limit")
 
-          return "Fail"
+          return "Fail","Fail", "Fail"
      
      moment = 0
      for con in connections:
@@ -275,8 +275,12 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
                s2 = stress_list[con[1]][0]
 
           moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
-
-     return moment/10**6, A
+     stress_max_flat = stress_from_strain(A * (max(y)-B), Material_flat)
+     if Material_corner == "Y":
+          stress_max_corner= stress_from_strain(A * (max(y)-B), Material_corner[1])
+     else: 
+          stress_max_corner = []
+     return moment/10**6, A, [stress_max_flat, stress_max_corner]
   
 
 """n = 300
