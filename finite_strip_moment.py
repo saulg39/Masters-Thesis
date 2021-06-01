@@ -2,6 +2,7 @@ import math
 import numpy as np
 from scipy import linalg
 from channel import channel
+from channel_imp import channel_imp
 from I_beam import I_beam
 from RHS import RHS
 from stress_from_strain import stress_from_strain
@@ -18,39 +19,43 @@ def find_nearest(array, value):
 def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
      ##########################################################################
      #
-     #  This program finds the critical buckling stress of a channel
+     #  This program finds the critical buckling moment of a beam
      #  section using the finite strip method.
      #
-     #  It requires an initial guess of the critical buckling stress
-     #  to calculate the tangent modulus and then calculates a buckling stress
-     #  from that value.
+     #  It requires an initial guess of the critical cuvature
+     #  to calculate the strain, stress and tangent modulus distribution and 
+     #  then calculates a buckling moment from those distrubutions.
      #
      #  If the guess and the result are too far apart then the program changes
-     #  the value of the guess to the average of the previous two and calculates
-     #  a new critical stress.
+     #  the program uses the outcome as well as previous outcomesto  attempt to 
+     #  predict the critical cuvature and repaeats the process till the critical 
+     #cuvature
      #
      #  The program repeats this iteration until the difference between 
      #  the guess and the resulting critical stress is less than 0.001 MPa.
      #
      #  Notation:
-     #
-     #  scr    critical buckling stress
-     #  b      width of section
-     #  c      length of lip
-     #  d      depth of section
-     #  t      thickness of section
-     #  r      radius of corners
-     #  Eel    initial modulus
-     #  spr    0.2# proof stress
-     #  n      defines roundness of stress strain curve
-     #  k      defines ratio between shear stress and strain increments
-     #  v      poisson's ratio
-     #  L      half-wavelength of locally buckled section
-     #  Et     tangent modulus
+     #  L                half-wavelength of locally buckled section
+     #  shape            list that contains all information about shape of cross-section
+     #  Material_flat    list that contains all material properties of flat about shape of cross-section
+     #  A                curvature
+     #  b                width of section
+     #  c                length of lip
+     #  d                depth of section
+     #  t                thickness of section
+     #  t_flange         thickness of flange for I-beams
+     #  t_web            thickness of web for I-beams
+     #  r                internal radius of corners
+     #  Eel              initial modulus
+     #  spr              0.2# proof stress
+     #  n                defines roundness of stress strain curve
+     #  k                defines ratio between shear stress and strain increments
+     #  v                poisson's ratio
+     #  Et               tangent modulus
      #
      ##########################################################################
 
-     ## Run channel.m
+     ## Define the shape of the finite strip mesh: the coordinates x,y of the nodel points and there connetions
 
      if shape[0] == "I Beam":
           
@@ -58,7 +63,7 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
           
      elif shape[0] == "channel":
 
-          x, y, connections = channel(b = shape[1], c = shape[6], d = shape[2], t = shape[4], r = shape[3])
+          x, y, connections = channel(b = shape[1], c = shape[6], d = shape[2], t = shape[4], r = shape[3]) 
 
      elif shape[0] == "RHS":
 
@@ -70,7 +75,6 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
 
      ## Initialising variables
      lamda = 2
-
      A=A_initial/2
      A_upper = False
      A_lower = False
@@ -78,8 +82,12 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
      stop = False
      count = 0
 
+     #Start of while loop that iterates Curvature
      while not stop:
+          #iterate count to stop never ending loop
           count +=1
+          #Defines the new curvature value based on A_upper and A_lower and their corrisponding lamda
+          #If no A_upper or A_lower simple equation used so that the next iteration does have A_upper and A_lower
           if A_upper == False or A_lower == False:
                A = A * lamda
           else:
@@ -90,28 +98,29 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
                else:
                     A = (A_upper[0] * A_lower[0] ** ratio)**(1/(ratio + 1))
 
+          #create blank G and K matricies 
           K = np.zeros((4*len(x),4*len(x)))
 
           G = np.zeros((4*len(x),4*len(x)))
 
-          ## Calculating Et and phi
+          # Calculating stress list including Et and stress at each nodal point using flat material properties
           stress_list = []
           for i in range(len(x)):
                stress_list.append(stress_from_strain(A * (y[i]-B), Material_flat))
 
-          ## Forming global K and G matrices loop
-
+          # For loop to iterate through all the strips to form global K and G matrices 
           for con in connections:
                ## assigning stresses
                i,j,t,f = con
 
+               #If material is in corner and the crossecton has defined corner properties. then use said properties to get nodal stresses
                if Material_corner[0] == "Y" and f == True:
                     stress_list_1 = stress_from_strain(A * (y[i]-B), Material_corner[1])
                     stress_list_2 = stress_from_strain(A * (y[i]-B), Material_corner[1])
                     Eel = Material_corner[1][0]
                     v = Material_corner[1][3]
                     k = Material_corner[1][4]
-
+               #else use flat material properties and stresses
                else:
                     stress_list_1 = stress_list[i]
                     stress_list_2 = stress_list[j]
@@ -125,13 +134,13 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
 
                s2 = stress_list_2[0]
 
-               ## Calculating Et and phi
+               ## Calculating average Et over strip (from geometric average from Et at nodal points) and phi
 
                Et = math.sqrt(stress_list_1[1]*stress_list_2[1]) 
 
                phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)
 
-               ## Calculating width of element, bel, and thickness, t
+               ## Calculating bel
 
                bel = math.sqrt((x[j]-x[i])**2 + (y[j]-y[i])**2)
                
@@ -235,13 +244,14 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
                
            
            
-          ## Calculating buckling stress
+          ## calculationg the lowest eiganvalue lamda usin eiganvector analysis
 
           w = linalg.eigvals(K,G)
           w = w.real
           index = np.where(w > 0, w, np.inf).argmin()
           lamda = w[index]
 
+          #updating curvature uupper and lower bounds based on eigianvalue result
           if lamda<1:
                if A_upper == False:
                     A_upper = [A,lamda]
@@ -252,17 +262,19 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
                     A_lower = [A,lamda]
                elif A_lower[0] < A:
                      A_lower = [A,lamda]
+
+          #stop loop if count is past 60 or curvature is within 0.1%
           if A_upper == False or A_lower == False:
                if abs(lamda-1)<0.001 or count > 60:
                     stop = True
           elif count > 60 or (A_upper[0]-A_lower[0])/A_lower[0] < 0.001:
                stop = True
-          #[scr index] = min(eig(K,G)) 
+     #inform user if cause of stop was due to count pasiing 60 rather finding correct curvature
      if count > 60:
           print("L = ",L," has passed count limit")
 
           return "Fail","Fail", "Fail"
-     
+     #Calculation of moment by summing the contribution from all the individual strips
      moment = 0
      for con in connections:
           area = math.sqrt((x[con[1]]-x[con[0]])**2 + (y[con[1]]-y[con[0]])**2) * con[2]
@@ -275,11 +287,14 @@ def finitestrip_shape(L, shape, Material_flat, Material_corner, A_initial):
                s2 = stress_list[con[1]][0]
 
           moment += (((2 * y[con[0]] +y[con[1]]) * s1 + (2 * y[con[1]] +y[con[0]]) * s2)/6) * area
+     
+     #storing information about maximum stress and external flanges Et
      stress_max_flat = stress_from_strain(A * (max(y)-B), Material_flat)
-     if Material_corner == "Y":
+     if Material_corner[0] == "Y":
           stress_max_corner= stress_from_strain(A * (max(y)-B), Material_corner[1])
      else: 
-          stress_max_corner = []
+          stress_max_corner = ["",""]
+     #return results
      return moment/10**6, A, [stress_max_flat, stress_max_corner]
   
 

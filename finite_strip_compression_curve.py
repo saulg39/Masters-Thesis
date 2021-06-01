@@ -328,7 +328,7 @@ r = (max_L/min_L) ** (1/(n-1))
 Stress = []
 Stress_1 = []
 Length = []
-Length_factor= False
+Length_factor= True
 S_2 = 300
 
 tic = time.perf_counter()

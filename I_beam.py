@@ -7,8 +7,8 @@ def I_beam(b, d, t_web, t_flange, r):
      # 10 elements for the web
      # 4 elements for flange and lip
 
-     nweb = 8
-     nflange = 3
+     nweb = 10
+     nflange = 4
      ncorner = 4
      
      bflat = (b-t_web-2*r)/2
@@ -30,12 +30,12 @@ def I_beam(b, d, t_web, t_flange, r):
                connections.append([i*(nflange+1)+j,i*(nflange+1)+j+1, t_flange, True])
      for j in range(nweb):
           connections.append([4*(nflange+1)+j,4*(nflange+1)+j+1, t_web, False])
-     connections.append([nflange,nflange*2+1, t_flange, True])
-     connections.append([nflange*3+2,nflange*4+3, t_flange, True])
-     connections.append([nflange,nflange*4+4, t_web, True])
-     connections.append([nflange*4+4,nflange*2+1, t_web, True])
-     connections.append([nflange*3+2,nflange*4+nweb+4, t_web, True])
-     connections.append([nflange*4+nweb+4,nflange*4+3, t_web, True])
+     connections.append([nflange,nflange*2+1, t_flange*0.5, True])
+     connections.append([nflange*3+2,nflange*4+3, t_flange*0.5, True])
+     connections.append([nflange,nflange*4+4, t_web*0.5, True])
+     connections.append([nflange*4+4,nflange*2+1, t_web*0.5, True])
+     connections.append([nflange*3+2,nflange*4+nweb+4, t_web*0.5, True])
+     connections.append([nflange*4+nweb+4,nflange*4+3, t_web*0.5, True])
 
      return x, y, connections
 

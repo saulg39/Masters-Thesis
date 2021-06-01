@@ -54,16 +54,23 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
      
      ## Run channel.m
 
-     if shape == "I Beam":
+     if shape[0] == "I Beam":
           
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+          x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
           
      elif shape == "channel":
 
-          x, y, connections = channel(b, c, d, t_web, r)
+          x, y, connections = channel(b = b, c = c, d = d, t = t_web, r = r) 
+     elif shape[0] == "channel_imp":
+
+          x, y, connections = channel_imp(b = shape[1], c = shape[6], d = shape[2], t = shape[4], r = shape[3],delta = delta)
+
+     elif shape[0] == "RHS":
+
+          x, y, connections = RHS(b = shape[1], d = shape[2], t = shape[4], r = shape[3])
 
      else:
-          x, y, connections = I_beam(b, d, t_web, t_flange, r)
+          x, y, connections = I_beam(b = shape[1], d = shape[2], t_web = shape[4], t_flange = shape[5], r = shape[3])
      
      ## Initialising variables
      scr = 0
@@ -88,7 +95,7 @@ def finitestrip_shape(L, shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k, 
 
 
                ## assigning stresses
-               i,j,t = con
+               i,j,t,f= con
                ## Calculating Et and phi
 
                phi = Eel / ((1 + v * k) * Eel - (v + k) * v * Et)

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 def stress_from_strain(strain, Material):
       Eel = Material[0]
+      #return [strain*Eel,Eel]
       spr = Material[1]
       n = Material[2]
       s_ult = Material[5]
@@ -44,6 +45,7 @@ def stress_from_strain(strain, Material):
                         strain_est = strain_det + (stress_est - spr) / Ey + strain_ult * ((stress_est - spr) / (s_ult - spr)) ** m
                         stop+=1
                   Et_est = ((s_ult - spr) * Ey) / ((s_ult - spr) + strain_ult * m * Ey * ((stress_est - spr) / (s_ult - spr)) ** (m - 1))
+
 
             if stop < 10000:
                   return [sign * stress_est, Et_est]

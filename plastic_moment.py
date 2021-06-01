@@ -18,6 +18,10 @@ def plastic_moment(shape, b, d, r, t_web, t_flange, c, Eel, spr, n, v, k):
 
           x, y, connections = channel(b, c, d, t_web, r)
 
+    elif shape == "channel_imp":
+
+          x, y, connections = channel_imp(b, c, d, t_web, r)
+
     elif shape == "RHS":
 
           x, y, connections = RHS(b, d, t_web, r)
